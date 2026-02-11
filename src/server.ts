@@ -78,9 +78,10 @@ mongoose.connect(MONGODB_URI)
     console.log('Connected to MongoDB');
     
     // Start server
-    const PORT = process.env.PORT || 3001;
-    httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    const PORT = Number(process.env.PORT) || 3001;
+    const HOST = '0.0.0.0';
+    httpServer.listen(PORT, HOST, () => {
+      console.log(`Server running on ${HOST}:${PORT}`);
       console.log(`CORS origin: ${process.env.CORS_ORIGIN || 'http://localhost:3000'}`);
     });
   })
