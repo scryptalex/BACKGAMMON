@@ -99,13 +99,8 @@ router.post('/', auth_1.auth, async (req, res) => {
             res.status(400).json({ error: 'Invalid stake. Minimum is 1 USDT' });
             return;
         }
-        if (req.user.balance < stake) {
-            res.status(400).json({ error: 'Insufficient balance' });
-            return;
-        }
-        // Deduct stake from user balance
-        req.user.balance -= stake;
-        await req.user.save();
+        // Balance is checked on blockchain via smart contract
+        // No need to check MongoDB balance
         // Initialize board state
         const boardState = (0, gameLogic_1.initializeBoard)(type);
         // Create game
@@ -157,13 +152,8 @@ router.post('/:id/join', auth_1.auth, async (req, res) => {
             res.status(403).json({ error: 'Invalid invite code' });
             return;
         }
-        if (req.user.balance < game.stake) {
-            res.status(400).json({ error: 'Insufficient balance' });
-            return;
-        }
-        // Deduct stake from joining user
-        req.user.balance -= game.stake;
-        await req.user.save();
+        // Balance is checked on blockchain via smart contract
+        // No need to check MongoDB balance
         // Update game
         game.player2 = req.user._id;
         game.status = 'active';
@@ -209,9 +199,7 @@ router.post('/:id/cancel', auth_1.auth, async (req, res) => {
             res.status(400).json({ error: 'Cannot cancel a game that has already started' });
             return;
         }
-        // Refund stake
-        req.user.balance += game.stake;
-        await req.user.save();
+        // Refund handled by smart contract
         // Update game status
         game.status = 'cancelled';
         await game.save();

@@ -110,14 +110,8 @@ router.post('/', auth, async (req: AuthRequest, res: Response): Promise<void> =>
       return;
     }
 
-    if (req.user.balance < stake) {
-      res.status(400).json({ error: 'Insufficient balance' });
-      return;
-    }
-
-    // Deduct stake from user balance
-    req.user.balance -= stake;
-    await req.user.save();
+    // Balance is checked on blockchain via smart contract
+    // No need to check MongoDB balance
 
     // Initialize board state
     const boardState = initializeBoard(type);
@@ -182,14 +176,8 @@ router.post('/:id/join', auth, async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    if (req.user.balance < game.stake) {
-      res.status(400).json({ error: 'Insufficient balance' });
-      return;
-    }
-
-    // Deduct stake from joining user
-    req.user.balance -= game.stake;
-    await req.user.save();
+    // Balance is checked on blockchain via smart contract
+    // No need to check MongoDB balance
 
     // Update game
     game.player2 = req.user._id;
@@ -246,10 +234,7 @@ router.post('/:id/cancel', auth, async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    // Refund stake
-    req.user.balance += game.stake;
-    await req.user.save();
-
+    // Refund handled by smart contract
     // Update game status
     game.status = 'cancelled';
     await game.save();
