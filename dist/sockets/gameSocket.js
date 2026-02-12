@@ -78,8 +78,18 @@ function setupGameSocket(io) {
                     socket.emit('game:error', { message: 'Game is not active' });
                     return;
                 }
-                const isPlayer1 = game.player1.toString() === socket.userId;
+                // Debug logging
+                console.log('Roll dice attempt:', {
+                    socketUserId: socket.userId,
+                    player1: game.player1?.toString(),
+                    player2: game.player2?.toString(),
+                });
+                const isPlayer1 = game.player1?.toString() === socket.userId;
                 const isPlayer2 = game.player2?.toString() === socket.userId;
+                if (!isPlayer1 && !isPlayer2) {
+                    socket.emit('game:error', { message: 'You are not a player in this game' });
+                    return;
+                }
                 const playerNum = isPlayer1 ? 1 : 2;
                 // Handle initial roll phase (one die each to determine who starts)
                 if (game.boardState.initialRollPhase) {
