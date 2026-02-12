@@ -17,6 +17,9 @@ export interface BoardState {
     player2Bar: number;
     player1Off: number;
     player2Off: number;
+    initialRollPhase: boolean;
+    player1InitialRoll: number;
+    player2InitialRoll: number;
 }
 export interface IGame extends Document {
     _id: Types.ObjectId;

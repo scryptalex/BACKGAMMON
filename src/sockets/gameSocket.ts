@@ -114,9 +114,79 @@ export function setupGameSocket(io: Server): void {
           return;
         }
 
-        // Check if it's this player's turn
         const isPlayer1 = game.player1.toString() === socket.userId;
         const isPlayer2 = game.player2?.toString() === socket.userId;
+        const playerNum = isPlayer1 ? 1 : 2;
+
+        // Handle initial roll phase (one die each to determine who starts)
+        if (game.boardState.initialRollPhase) {
+          // Check if this player already rolled
+          if (playerNum === 1 && game.boardState.player1InitialRoll > 0) {
+            socket.emit('game:error', { message: 'You already rolled. Wait for opponent.' });
+            return;
+          }
+          if (playerNum === 2 && game.boardState.player2InitialRoll > 0) {
+            socket.emit('game:error', { message: 'You already rolled. Wait for opponent.' });
+            return;
+          }
+
+          // Roll one die
+          const singleDie = Math.floor(Math.random() * 6) + 1;
+          
+          if (playerNum === 1) {
+            game.boardState.player1InitialRoll = singleDie;
+          } else {
+            game.boardState.player2InitialRoll = singleDie;
+          }
+
+          await game.save();
+
+          // Emit the initial roll to everyone
+          io.to(`game:${gameId}`).emit('game:initial-roll', {
+            player: playerNum,
+            roll: singleDie,
+            player1Roll: game.boardState.player1InitialRoll,
+            player2Roll: game.boardState.player2InitialRoll,
+          });
+
+          // Check if both have rolled
+          if (game.boardState.player1InitialRoll > 0 && game.boardState.player2InitialRoll > 0) {
+            const p1Roll = game.boardState.player1InitialRoll;
+            const p2Roll = game.boardState.player2InitialRoll;
+
+            if (p1Roll === p2Roll) {
+              // Tie - reset and roll again
+              game.boardState.player1InitialRoll = 0;
+              game.boardState.player2InitialRoll = 0;
+              await game.save();
+
+              io.to(`game:${gameId}`).emit('game:initial-roll-tie', {
+                message: 'Tie! Both players roll again.',
+                roll: p1Roll,
+              });
+            } else {
+              // Determine winner and set up first move
+              const firstPlayer = p1Roll > p2Roll ? 1 : 2;
+              game.boardState.initialRollPhase = false;
+              game.boardState.currentPlayer = firstPlayer;
+              game.boardState.dice = [p1Roll, p2Roll] as [number, number];
+              game.boardState.remainingMoves = getAvailableMoves([p1Roll, p2Roll] as [number, number]);
+              await game.save();
+
+              io.to(`game:${gameId}`).emit('game:initial-roll-complete', {
+                winner: firstPlayer,
+                player1Roll: p1Roll,
+                player2Roll: p2Roll,
+                dice: [p1Roll, p2Roll],
+                availableMoves: game.boardState.remainingMoves,
+                boardState: game.boardState,
+              });
+            }
+          }
+          return;
+        }
+
+        // Regular roll - check if it's this player's turn
         const currentPlayerNum = game.boardState.currentPlayer;
 
         if ((currentPlayerNum === 1 && !isPlayer1) || (currentPlayerNum === 2 && !isPlayer2)) {

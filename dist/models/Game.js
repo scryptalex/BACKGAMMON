@@ -66,6 +66,10 @@ const BoardStateSchema = new mongoose_1.Schema({
     player2Bar: { type: Number, default: 0 },
     player1Off: { type: Number, default: 0 },
     player2Off: { type: Number, default: 0 },
+    // Initial roll phase
+    initialRollPhase: { type: Boolean, default: true },
+    player1InitialRoll: { type: Number, default: 0 },
+    player2InitialRoll: { type: Number, default: 0 },
 }, { _id: false });
 const GameSchema = new mongoose_1.Schema({
     type: {

@@ -51,6 +51,10 @@ function initializeBoard(type) {
         player2Bar: 0,
         player1Off: 0,
         player2Off: 0,
+        // Initial roll phase - both players roll one die to determine who starts
+        initialRollPhase: true,
+        player1InitialRoll: 0,
+        player2InitialRoll: 0,
     };
 }
 /**

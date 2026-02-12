@@ -22,6 +22,10 @@ export interface BoardState {
   player2Bar: number;
   player1Off: number;
   player2Off: number;
+  // Initial roll phase
+  initialRollPhase: boolean;
+  player1InitialRoll: number;
+  player2InitialRoll: number;
 }
 
 export interface IGame extends Document {
@@ -76,6 +80,10 @@ const BoardStateSchema = new Schema({
   player2Bar: { type: Number, default: 0 },
   player1Off: { type: Number, default: 0 },
   player2Off: { type: Number, default: 0 },
+  // Initial roll phase
+  initialRollPhase: { type: Boolean, default: true },
+  player1InitialRoll: { type: Number, default: 0 },
+  player2InitialRoll: { type: Number, default: 0 },
 }, { _id: false });
 
 const GameSchema: Schema = new Schema({
